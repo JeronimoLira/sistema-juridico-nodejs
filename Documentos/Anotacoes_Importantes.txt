@@ -1,0 +1,20 @@
+Página que lista os processos e suas funcionalidades
+====================================================
+Boa tarde GPT.
+Então, tive analisando a nossa situação em relação ao retorno da lista de processos para usuarios_externos e, fazendo consulta no BD, descobri que não tem nenhum usuario externo com cliente_id que leve a processos de um cliente e por isso quando faço login com um usuario externo não vem processo.
+
+Dito isso, temporariamente, vamos parar de tentar resolver busca de processos para usuarios externos.
+
+Assim, vamos passar para àquele ponto que eu queria dar continuidade, que é o seguinte: Quando temos uma lista de processos exibida, vem com os campos: Número, Cliente, Parte Contrária, Prazo e Audiência. No sistema original:
+- o campo processo é um link que deveria levar para o processo no TJRJ (Tribunal de Justiça do RJ), mas não está funcionando, nem no original que está em produção. E não funciona, porque o TJRJ mudou o link e criaram uma segurança que tenho que descobrir como vou fazer. Vou ligar para o TJRJ e ver se tem uma API para resolver esse caso,.
+- Para cada processo, há 3 outros links que desviam para outras partes do sistema:
+          - Detalhes - São detalhes do processo
+          - Cálculos - É uma pagina que exibe os cálculos correspondente àquele processo
+          - Editar Cliente - Desvia para a tela de U do CRUD de Clientes - Então é só Alteração
+Então, o que eu pensei em fazer:
+- Criar um link no número do processo que vai desviar para a página de CRUD do processo, com àquele processo carregado, eliminando o link "Detalhes"
+- Criar um link no Cliente daquele processo, que vai desviar para a pagina de CRUD de cliente, com aquele cliente carregado, eliminando o link "Editar Cliente". 
+- O link "Cálculos" será substituído por um botão na página de CRUD de processos e que  exibiremos a página de cálculos daquele processo
+
+Com isso, substituímos todas as funcionalidades existentes hoje na exibição da lista de processos. Lembrando que: devemos continuar com as estratégias que definimos anteriormente e fazer a estrutura de forma modular e com funções porque varias funcionalidades dessas, senão todas, serão chamadas de outros pontos do sistema.
+

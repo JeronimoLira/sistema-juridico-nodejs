@@ -1,0 +1,14 @@
+<!-- 📄 views/pages/erro.ejs -->
+<%- include('partials/header', { titulo: 'Erro !!!' }) %>
+
+<main class="text-center py-8">
+  <h1 class="text-6xl font-bold text-red-600 mb-4"><%= codigo || 500 %></h1>
+  <h2 class="text-2xl font-semibold mb-2 text-gray-800"><%= mensagem || 'Erro inesperado.' %></h2>
+  <p class="text-gray-600 mb-6">Entre em contato com o administrador se o problema persistir.</p>
+
+  <a href=<%= rotaLogin || '/login' %> class="inline-block px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+    Voltar ao login
+  </a>
+</main>
+
+<%- include('partials/footer') %>

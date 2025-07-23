@@ -1,0 +1,20 @@
+<!-- public/logout.html -->
+<%- include('partials/header', { titulo: 'Saindo do sistema...' }) %>
+  <div class="mensagem">Você saiu do sistema com sucesso.</div>
+  <div class="contador">Redirecionando para a página inicial em <span id="tempo">5</span> segundos...</div>
+
+  <script>
+    localStorage.removeItem('token'); // Remove o token de autenticação
+
+    let tempo = 5;
+    const span = document.getElementById('tempo');
+    const interval = setInterval(() => {
+      tempo--;
+      span.textContent = tempo;
+      if (tempo === 0) {
+        clearInterval(interval);
+        window.location.href = '/index.html';
+      }
+    }, 1000);
+  </script>
+<%- include('partials/footer') %>

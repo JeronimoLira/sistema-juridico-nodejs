@@ -1,0 +1,75 @@
+<%- include('partials/header', { titulo: 'Redefinir Senha' }) %>
+  <div class="bg-white p-8 rounded-xl shadow-md w-full max-w-md">
+    <h2 class="text-2xl font-bold text-center mb-6 text-blue-700">Redefinir Senha</h2>
+    
+    <div id="mensagem" class="hidden text-red-600 text-sm mb-4 text-center"></div>
+
+    <form onsubmit="return enviarNovaSenha(event)" class="space-y-4">
+      <input
+        type="password"
+        id="senha"
+        placeholder="Nova senha"
+        required
+        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
+      />
+      <input
+        type="password"
+        id="confirmar"
+        placeholder="Confirme a nova senha"
+        required
+        class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:border-blue-300"
+      />
+      <button
+        type="submit"
+        class="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg"
+      >
+        Redefinir
+      </button>
+    </form>
+
+    <div class="mt-6 text-center">
+      <a href="/login" class="text-sm text-blue-500 hover:underline">Voltar ao login</a>
+    </div>
+  </div>
+
+  <script>
+    async function enviarNovaSenha(event) {
+      event.preventDefault();
+
+      const senha = document.getElementById('senha').value;
+      const confirmar = document.getElementById('confirmar').value;
+      const mensagem = document.getElementById('mensagem');
+      mensagem.classList.add('hidden');
+
+      if (senha !== confirmar) {
+        mensagem.textContent = msg.SENHAS_NAO_COINCIDEM;
+        mensagem.classList.remove('hidden');
+        return;
+      }
+
+      const token = window.location.pathname.split('/').pop();
+
+      try {
+        const resposta = await fetch(`/api/auth/resetarSenha/${token}`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ senha })
+        });
+
+        const dados = await resposta.json();
+
+        if (resposta.ok) {
+          alert(msg.SENHA_REDEFINIDA_SUCESSO);
+          window.location.href = '/login';
+        } else {
+          mensagem.textContent = dados.mensagem || msg.ERRO_REDEFINIR_SENHA || msg.TENTE_NOVAMENTE;
+          mensagem.classList.remove('hidden');
+        }
+      } catch (error) {
+        console.error('Erro:', error);
+        mensagem.textContent = msg,ERRO_INESPERADO || msg.TENTE_NOVAMENTE;
+        mensagem.classList.remove('hidden');
+      }
+    }
+  </script>
+<%- include('partials/footer') %>

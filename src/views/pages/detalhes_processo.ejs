@@ -1,0 +1,53 @@
+<!-- 📄 src/views/pages/detalhes_processo.ejs -->
+<%- include('partials/header', { titulo: 'Detalhes - Processos' }) %>
+
+<div class="container mx-auto px-4 py-6">
+  <h1 class="text-2xl font-bold mb-4">Detalhes do Processo Nº <%= processo.numero %></h1>
+
+  <div class="bg-white shadow rounded p-4 mb-6">
+    <p><strong>Cliente:</strong> <%= processo.cliente %></p>
+    <p><strong>Parte Contrária:</strong> <%= processo.reu_nome || 'N/A' %></p>
+    <p><strong>Tipo de Ação:</strong> <%= processo.tipo_acao_nome || 'Não especificado' %></p>
+    <p><strong>Natureza:</strong> <%= processo.natureza || 'N/A' %></p>
+    <p><strong>Comarca:</strong> <%= processo.comarca || 'N/A' %></p>
+    <p><strong>Vara:</strong> <%= processo.vara || 'N/A' %></p>
+    <p><strong>Encarregado:</strong> <%= processo.encarregado_nome %> (<%= processo.encarregado_email %>)</p>
+    <p><strong>Próximo Prazo:</strong> <%= processo.prazo ? processo.prazo.toLocaleDateString() : '-' %></p>
+    <p><strong>Próxima Audiência:</strong> <%= processo.audiencia ? processo.audiencia.toLocaleDateString() : '-' %></p>
+    <p><strong>Link TJ:</strong> 
+      <a href="http://www4.tjrj.jus.br/consultaProcessoWebV2/consultaProc.do?FLAGNOME=&back=1&tipoConsulta=publica&numProcesso=<%= processo.numero %>" 
+         target="_blank" class="text-blue-600 hover:underline">Consultar no TJ</a>
+    </p>
+  </div>
+    
+  <h2 class="text-xl font-semibold mb-2">Movimentos</h2>
+  <% if (movimentos.length) { %>
+    <% movimentos.forEach(mov => { %>
+      <div class="border rounded p-2 mb-2">
+        <input type="checkbox" name="and_<%= mov.codigo %>"> 
+        <strong><%= new Date(mov.data).toLocaleDateString() %></strong> - <%= mov.titulo || '' %><br>
+        <small><%= mov.descricao || '' %></small><br>
+        <small>Providências: <%= mov.providencia || '-' %></small><br>
+        <small>Por: <%= mov.altpor_nome %></small>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <p>Nenhum movimento registrado.</p>
+  <% } %>
+
+  <h2 class="text-xl font-semibold mt-6 mb-2">Extrajudicial</h2>
+  <% if (extrajud.length) { %>
+    <% extrajud.forEach(ext => { %>
+      <div class="border rounded p-2 mb-2">
+        <input type="checkbox" name="ext_<%= ext.codigo %>"> 
+        <strong><%= new Date(ext.data).toLocaleDateString() %></strong> - <%= ext.titulo || '' %><br>
+        <small><%= ext.descricao || '' %></small><br>
+        <small>Por: <%= ext.altpor_nome %></small>
+      </div>
+    <% }) %>
+  <% } else { %>
+    <p>Nenhum extrajudicial registrado.</p>
+  <% } %>
+</div>
+
+<%- include('partials/footer') %>

@@ -1,0 +1,227 @@
+o sistema é de administração de processos judiciais. É utilizado por advogados que são os usuarios do sistema. Assim que se faz login no sistema são exibidos os processos de responsabilidade do usuario.
+
+
+Premissas:
+- O primeiro arquivo php que enviei foi index.php
+- Da forma como está a conversão hoje é:
+	- Tem uma tela de login para entrar com usuário e senha
+	- criamos um script para alterar as senhas de todos os usuarios para login + '2025' criptografado com bcrypt
+	- Se ao logar a senha igual ao login + '2025' 
+		desvia para trocar a senha 
+	  Senão
+		Se senha inválida
+			Mensagem de invalida
+		Senão
+			envia para a tela inicial
+		fim se
+	  fim se
+	- Existe campos de pesquisa acima da tabelas com a lista de processos com os seguintes campos para filtro:
+		- Processo - Número do processo
+		- Cliente  - Nome ou pedaço do nome do clientes
+		- Combobox com os usuarios onde as duas primeiras opções são: "Meus" e "Todos".
+			- Na combo - value tem o código do usuario e o Nome do usuario
+			- Meus tem o código do usuario logado
+- Estamos usando:
+	- EJS - Embedded JavaScript Templating
+	- Token JWT no login com a estrutura:
+		const tokenPayload = {
+			codigo: usuario.codigo,
+			login: usuario.login,
+			nome: usuario.nome,
+			email: usuario.email,
+			nivel: usuario.nivel,
+			tipo,
+		};
+		
+		Onde, tipo é se é usuario interno ou externo, apesar de não estarmos usando o usuario externo ainda.
+
+- Advogado = usuario e vice versa
+- existe a figura do usuario_enternos que são alguns funcionários dos clientes. Porém, inicialmente, não estão sendo utilizados, porque quando fiz um SELECT na tabela real, nenhum usuáro externo está com acesso a algum processo. Então, temporariamente, não estamos usando o usuarios_externos.
+- Só existem processos, ou seja, não existem processos internos ou processos externos.
+
+A estrutura de pastas e arquivos é a seguinte:
+Só não coloquei a Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\node_modules e seus subdiretórios e arquivos,
+ 
+
+C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS>dir/s
+ O volume na unidade C é JeronimoLira
+ O Número de Série do Volume é 0EBB-E86A
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS
+
+13/07/2025  18:50    <DIR>          .
+20/07/2025  14:40    <DIR>          ..
+02/07/2025  20:53               611 .env
+13/07/2025  15:32             2.286 Anotacoes_Importantes.txt
+27/06/2025  01:43    <DIR>          db
+09/07/2025  16:32    <DIR>          node_modules
+09/07/2025  16:32            62.149 package-lock.json
+09/07/2025  16:32               535 package.json
+04/07/2025  21:00    <DIR>          public
+13/07/2025  17:00             2.211 server.js
+27/06/2025  14:06    <DIR>          src
+               5 arquivo(s)         67.792 bytes
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\db
+
+27/06/2025  01:43    <DIR>          .
+13/07/2025  18:50    <DIR>          ..
+27/06/2025  01:44               298 db.js
+               1 arquivo(s)            298 bytes
+
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\public
+
+04/07/2025  21:00    <DIR>          .
+13/07/2025  18:50    <DIR>          ..
+27/06/2025  22:42    <DIR>          css
+15/07/2025  10:06    <DIR>          js
+               0 arquivo(s)              0 bytes
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\public\css
+
+27/06/2025  22:42    <DIR>          .
+04/07/2025  21:00    <DIR>          ..
+27/06/2025  22:42                 0 dashboard.css
+27/06/2025  02:04               484 style.css
+               2 arquivo(s)            484 bytes
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\public\js
+
+15/07/2025  10:06    <DIR>          .
+04/07/2025  21:00    <DIR>          ..
+12/07/2025  17:28    <DIR>          componentes
+13/07/2025  17:03             5.583 dashboardProcessos.js
+12/07/2025  17:49             1.443 login.js
+05/07/2025  14:16    <DIR>          utils
+               2 arquivo(s)          7.026 bytes
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\public\js\componentes
+
+12/07/2025  17:28    <DIR>          .
+15/07/2025  10:06    <DIR>          ..
+05/07/2025  03:54             1.222 carregarUsuariosExternos.js
+07/07/2025  00:50             1.688 carregarUsuariosInternos.js
+               2 arquivo(s)          2.910 bytes
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\public\js\utils
+
+05/07/2025  14:16    <DIR>          .
+15/07/2025  10:06    <DIR>          ..
+11/07/2025  00:37             1.186 rotinasGenericas.js
+               1 arquivo(s)          1.186 bytes
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\src
+
+27/06/2025  14:06    <DIR>          .
+13/07/2025  18:50    <DIR>          ..
+12/07/2025  17:24    <DIR>          controllers
+04/07/2025  20:21    <DIR>          middleware
+27/06/2025  00:42    <DIR>          models
+13/07/2025  16:29    <DIR>          routes
+08/07/2025  19:02    <DIR>          services
+05/07/2025  14:16    <DIR>          utils
+04/07/2025  19:15    <DIR>          views
+               0 arquivo(s)              0 bytes
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\src\controllers
+
+12/07/2025  17:24    <DIR>          .
+27/06/2025  14:06    <DIR>          ..
+12/07/2025  22:31             4.906 authController.js
+09/07/2025  17:16             1.261 dashboardController.js
+12/07/2025  19:24             1.595 loginControler.js
+13/07/2025  16:39             1.304 processosController.js
+05/07/2025  17:00               468 usuariosController.js
+               5 arquivo(s)          9.534 bytes
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\src\middleware
+
+04/07/2025  20:21    <DIR>          .
+27/06/2025  14:06    <DIR>          ..
+08/07/2025  16:55               663 auth.js
+12/07/2025  22:35               693 authMiddleware.js
+               2 arquivo(s)          1.356 bytes
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\src\models
+
+27/06/2025  00:42    <DIR>          .
+27/06/2025  14:06    <DIR>          ..
+               0 arquivo(s)              0 bytes
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\src\routes
+
+13/07/2025  16:29    <DIR>          .
+27/06/2025  14:06    <DIR>          ..
+02/07/2025  17:20               602 auth.js
+13/07/2025  16:39               366 clientes.js
+01/07/2025  15:02               444 dashboard.js
+04/07/2025  17:13               401 dashboardRoutes.js
+08/07/2025  16:56               339 index.js
+13/07/2025  16:33               623 processos.js
+29/06/2025  01:57             2.665 processosRoutes.js
+12/07/2025  21:10             1.255 protegidas.js
+12/07/2025  17:55             1.645 publicRoutes.js
+               9 arquivo(s)          8.340 bytes
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\src\services
+
+08/07/2025  19:02    <DIR>          .
+27/06/2025  14:06    <DIR>          ..
+08/07/2025  20:10               120 clientesService.js
+09/07/2025  16:24             1.338 dashboardService.js
+27/06/2025  14:28               668 mailer.js
+13/07/2025  00:20             2.946 processosService.js
+12/07/2025  23:06             2.780 sqlQueries.js
+12/07/2025  19:31             2.767 usuarioService.js
+               6 arquivo(s)         10.619 bytes
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\src\utils
+
+05/07/2025  14:16    <DIR>          .
+27/06/2025  14:06    <DIR>          ..
+12/07/2025  14:43               952 atualizarSenhas.js
+08/07/2025  17:01               991 email.js
+11/07/2025  00:48             1.931 mensagens.js
+10/07/2025  18:39               525 seguranca.js
+               4 arquivo(s)          4.399 bytes
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\src\views
+
+04/07/2025  19:15    <DIR>          .
+27/06/2025  14:06    <DIR>          ..
+13/07/2025  16:37    <DIR>          pages
+               0 arquivo(s)              0 bytes
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\src\views\pages
+
+13/07/2025  16:37    <DIR>          .
+04/07/2025  19:15    <DIR>          ..
+05/07/2025  19:25             1.504 admin.ejs
+13/07/2025  16:39               350 cliente_form.ejs
+12/07/2025  18:36             3.492 dashboard_processos.ejs
+11/07/2025  01:48               619 erro.ejs
+04/07/2025  13:01             2.508 esqueci_senha.ejs
+12/07/2025  18:02               991 index.ejs
+12/07/2025  18:33             2.584 login.ejs
+03/07/2025  18:00               709 logout.ejs
+03/07/2025  15:01    <DIR>          partials
+13/07/2025  16:39               354 processo_form.ejs
+05/07/2025  19:26             2.583 resetar_senha.ejs
+05/07/2025  19:26               559 sucesso-troca.ejs
+12/07/2025  12:38             2.388 trocar_senha.ejs
+              12 arquivo(s)         18.641 bytes
+
+ Pasta de C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS\src\views\pages\partials
+
+03/07/2025  15:01    <DIR>          .
+13/07/2025  16:37    <DIR>          ..
+04/07/2025  20:46                59 footer.ejs
+04/07/2025  20:45             1.180 header.ejs
+               2 arquivo(s)          1.239 bytes
+
+     Total de Arquivos na Lista:
+            3739 arquivo(s)     19.523.610 bytes
+            1337 pasta(s)   47.928.799.232 bytes disponíveis
+
+C:\Jeronimo\Pessoal\Daibert\Projeto_NodeJS>

@@ -1,0 +1,40 @@
+<!-- 📄 views/partials/header.ejs -->
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Sistema de gerenciamento jurídico com controle de processos." />
+  <meta name="theme-color" content="#1f2937" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f3f4f6" media="(prefers-color-scheme: light)">
+  
+  <title><%= titulo || "Sistema Jurídico" %></title>
+  <link rel="icon" href="/img/favicon.ico" type="image/x-icon" />
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/img/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/img/favicon-16x16.png">
+  <link rel="manifest" href="/img/site.webmanifest">
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- 🌙 Modo escuro automático -->
+  <script>
+    if (
+      localStorage.getItem('theme') === 'dark' ||
+      (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)
+    ) {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+</head>
+<header class="bg-blue-600 text-white w-full p-4 shadow">
+  <div class="container mx-auto flex justify-between items-center">
+    <h1 class="text-lg font-semibold"><%= titulo || "Sistema Jurídico" %></h1>
+    <a href="/logout" class="bg-white text-blue-600 px-3 py-1 rounded hover:bg-gray-100">Sair</a>
+  </div>
+</header>
+
+<body class="bg-gray-100 dark:bg-gray-900 min-h-screen text-gray-800 dark:text-gray-100 antialiased">

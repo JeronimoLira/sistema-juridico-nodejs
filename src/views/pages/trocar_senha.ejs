@@ -1,0 +1,69 @@
+<%- include('partials/header', { titulo: 'Trocar Senha' }) %>
+  <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md">
+    <h2 class="text-2xl font-semibold mb-6 text-center text-gray-800 dark:text-gray-100">Trocar Senha</h2>
+
+    <form onsubmit="trocarSenha(event)">
+      <div class="mb-4">
+        <input 
+          type="password" 
+          id="novaSenha"
+          placeholder="Nova Senha" 
+          required 
+          class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-400 outline-none"
+        />
+      </div>
+      <div class="mb-4">
+        <input 
+          type="password" 
+          id="confirmarSenha" 
+          placeholder="Confirmar Senha" 
+          required
+          class="w-full px-4 py-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 focus:ring-2 focus:ring-blue-400 outline-none"
+        >
+      </div>
+      <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition">
+        Alterar Senha
+      </button>
+    </form>
+  </div>
+
+  <script>
+    async function trocarSenha(event) {
+      event.preventDefault();
+
+      const novaSenha = document.getElementById('novaSenha').value;
+      const confirmarSenha = document.getElementById('confirmarSenha').value;
+
+      if (novaSenha !== confirmarSenha) {
+        alert('As senhas não coincidem.  Tente novamente.');
+        return;
+      }
+
+      const token = localStorage.getItem('token');
+      if (!token) {
+        alert('Token não encontrado. Faça login novamente.');
+        window.location.href = '/login';
+        return;
+      }
+      
+      const resposta = await fetch('/api/auth/trocarSenha', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ novaSenha })
+      });
+
+      const dados = await resposta.json();
+
+      if (resposta.ok) {
+        alert('Senha alterada com sucesso!');
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      } else {
+        alert(dados.mensagem || 'Erro ao trocar senha. Tente novamente.');
+      }
+    }
+  </script>
+<%- include('partials/footer') %>

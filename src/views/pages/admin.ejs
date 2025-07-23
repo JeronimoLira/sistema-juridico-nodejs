@@ -1,0 +1,50 @@
+<!-- admin.html (pasta: public) -->
+<%- include('partials/header', { titulo: 'Painel Administrativo' }) %>
+  <div class="container">
+    <h1>Painel Administrativo</h1>
+    <div class="info">
+      <p><strong>Nome:</strong> <span id="nome"></span></p>
+      <p><strong>Login:</strong> <span id="login"></span></p>
+      <p><strong>Nível:</strong> <span id="nivel"></span></p>
+    </div>
+    <button onclick="logout()">Sair</button>
+  </div>
+
+  <script>
+    async function carregarUsuario() {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        window.location.href = '/login';
+        return;
+      }
+
+      try {
+        const resposta = await fetch('/api/admin', {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        });
+
+        if (!resposta.ok) {
+          throw new Error(msg.NAO_AUTORIZADO);
+        }
+
+        const dados = await resposta.json();
+        document.getElementById('nome').textContent = dados.nome;
+        document.getElementById('login').textContent = dados.login;
+        document.getElementById('nivel').textContent = dados.nivel;
+      } catch (err) {
+        console.error('Erro:', err);
+        localStorage.removeItem('token');
+        window.location.href = '/login';
+      }
+    }
+
+    function logout() {
+      localStorage.removeItem('token');
+      window.location.href = '/login';
+    }
+
+    carregarUsuario();
+  </script>
+<%- include('partials/footer') %>

@@ -1,0 +1,10 @@
+
+Página que lista os processos e suas funcionalidades
+====================================================
+- Ao logar como usuário externo, nenhum processo é listado atualmente porque não há associação no banco. Ignorado por ora.
+- Lista de processos mostra: Número, Cliente, Parte Contrária, Prazo, Audiência.
+- Links na lista:
+  * Número: deve abrir CRUD de processo (substitui link "Detalhes").
+  * Cliente: abre CRUD de cliente (substitui "Editar Cliente").
+  * Botão de cálculos ficará na tela de CRUD do processo.
+- Estrutura deve ser modular e com funções reutilizáveis.
