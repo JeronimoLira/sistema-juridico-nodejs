@@ -1,9 +1,11 @@
 // 📄 public/js/dashboardProcessos.js
-
+import { log } from './utils/logger.js';
 import { validarToken, formatarData } from './utils/rotinasGenericas.js';
 import { PaginationManager } from './utils/paginationManager.js';
 import { LoadingManager } from './utils/loadingManager.js';
 import { inicializarTabela } from './utils/tabelaGenerica.js';
+
+window.DEBUG = true;
 
 const loadingManager = new LoadingManager();
 const paginacaoProcessos = new PaginationManager('processos');
@@ -26,6 +28,8 @@ async function preencherCabecalhoComUsuario() {
 (async () => {
   const usuario = await validarToken();
   if (!usuario) return;
+
+  log('dashboardProcessos', 'Token:', token);
 
   await preencherCabecalhoComUsuario();
   await carregarUsuariosInternos?.();
@@ -62,3 +66,4 @@ export function exportarParaExcel() {
   XLSX.utils.book_append_sheet(workbook, worksheet, 'Processos');
   XLSX.writeFile(workbook, 'processos.xlsx');
 }
+

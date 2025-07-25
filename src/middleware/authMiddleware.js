@@ -1,15 +1,14 @@
 // 📄 src/middleware/authMiddleware.js
+const logger = require('../utils/logger');
 const jwt = require('jsonwebtoken');
 const { montarUsuario } = require('../services/usuarioService');
 
-const authMiddleware = (req, res, next) => {
-  let token;
+module.exports = (req, res, next) => {
+  let token = null;
 
   if (req.headers.authorization) {
     token = req.headers.authorization.split(' ')[1];
-  }
-
-  if (!token && req.session?.token) {
+  } else if (req.session?.token) {
     token = req.session.token;
   }
 
@@ -21,14 +20,15 @@ const authMiddleware = (req, res, next) => {
     return res.status(401).redirect('/login');
   }
 
+  logger.log('authMiddleware', 'headers.authorization:', req.headers.authorization);
+  logger.log('authMiddleware', 'session.token:', req.session?.token);
+
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     req.usuario = montarUsuario(decoded);
     next();
-  } catch (error) {
-    console.error('❌ Erro ao verificar token JWT:', error);
+  } catch (err) {
+    console.error('❌ Erro ao verificar token JWT:', err);
     return res.status(401).redirect('/login');
   }
 };
-
-module.exports = authMiddleware;

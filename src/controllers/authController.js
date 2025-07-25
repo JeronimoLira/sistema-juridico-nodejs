@@ -1,21 +1,19 @@
+// 📄 src/controllers/authController.js
+const logger = require('../utils/logger');
 const msg = require('../utils/mensagens');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
-const pool = require('../../db/db');
 const usuarioService = require('../services/usuarioService');
-const sql = require('../services/sqlQueries');
-
 const { enviarEmailResetSenha } = require('../utils/email');
 const { verificarSenhaTemporaria } = require('../utils/seguranca');
-
 require('dotenv').config();
 
-const gerarToken = (payload) => {
-  return jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
-};
+const gerarToken = (payload) => jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
 exports.login = async (req, res) => {
   const { login, senha } = req.body;
+
+  logger.log('authController', 'POST /api/auth/login body:', req.body);
 
   if (!login || !senha) {
     return res.status(400).json({ mensagem: msg.LOGIN_SENHA_OBRIGATORIOS });
@@ -28,24 +26,16 @@ exports.login = async (req, res) => {
     if (!usuario) {
       usuario = await usuarioService.buscarUsuarioExternoPorLogin(login);
       tipo = 'externo';
-
       if (usuario && !usuario.cliente_id) {
         return res.status(403).json({ mensagem: 'Usuário externo sem cliente associado. Contate o administrador.' });
       }
     }
 
-    if (!usuario) {
-      return res.status(401).json({ mensagem: msg.USUARIO_NAO_ENCONTRADO });
-    }
-
-    if (!usuario.ativo) {
-      return res.status(403).json({ mensagem: msg.USUARIO_INATIVO });
-    }
+    if (!usuario) return res.status(401).json({ mensagem: msg.USUARIO_NAO_ENCONTRADO });
+    if (!usuario.ativo) return res.status(403).json({ mensagem: msg.USUARIO_INATIVO });
 
     const senhaValida = await bcrypt.compare(senha, usuario.senha);
-    if (!senhaValida) {
-      return res.status(401).json({ mensagem: msg.SENHA_INVALIDA });
-    }
+    if (!senhaValida) return res.status(401).json({ mensagem: msg.SENHA_INVALIDA });
 
     const ehTemporaria = await verificarSenhaTemporaria(login, usuario.senha);
 
@@ -56,35 +46,34 @@ exports.login = async (req, res) => {
       email: usuario.email,
       nivel: usuario.nivel,
       tipo,
+      ...(tipo === 'externo' ? { cliente_id: usuario.cliente_id } : {})
     };
 
-    if (tipo === 'externo') {
-      tokenPayload.cliente_id = usuario.cliente_id;
-    }
-
     const token = gerarToken(tokenPayload);
+    logger.log('authController', 'Token gerado:', token);
     req.session.token = token;
-
     req.session.usuario = tokenPayload;
 
-    if (ehTemporaria) {
-      return res.status(200).json({ token, trocarSenha: true });
-    }
+    const aceitaHtml = req.accepts(['html', 'json']) === 'html';
+    const isFetch = req.headers['sec-fetch-mode'] === 'cors';
 
-    if (req.headers.accept && req.headers.accept.includes('text/html')) {
+    if (aceitaHtml && !isFetch) {
       return res.redirect('/dashboard_processos');
     }
 
+    if (ehTemporaria) return res.status(200).json({ token, trocarSenha: true });
+
     return res.status(200).json({ token });
 
-  } catch (error) {
-    console.error('Erro no login:', error);
+  } catch (err) {
+    console.error('Erro no login:', err);
     return res.status(500).json({ mensagem: msg.ERRO_TENTAR_LOGIN + msg.TENTE_NOVAMENTE });
   }
 };
 
 // 📩 Enviar e-mail com link para redefinir senha
 exports.esqueciSenha = async (req, res) => {
+  const sql = require('../services/sqlQueries');
   const { login } = req.body;
 
   if (!login) {
