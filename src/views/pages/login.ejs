@@ -1,8 +1,14 @@
 <%- include('partials/header', { titulo: 'Login | Sistema Jurídico' }) %>
 
 <div class="min-h-screen flex items-center justify-center">
-  <div class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md">
-    <h2 class="text-2xl font-semibold mb-6 text-center text-gray-800 dark:text-gray-100">Acesso ao Sistema</h2>
+  <div
+    class="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl w-full max-w-md"
+  >
+    <h2
+      class="text-2xl font-semibold mb-6 text-center text-gray-800 dark:text-gray-100"
+    >
+      Acesso ao Sistema
+    </h2>
 
     <form id="formLogin" class="space-y-4">
       <input
@@ -27,66 +33,15 @@
         Entrar
       </button>
       <p class="text-sm text-center text-gray-600 dark:text-gray-300 mt-4">
-        <a href="/esqueci_senha" class="text-blue-500 hover:underline">Esqueci minha senha</a>
+        <a href="/esqueci_senha" class="text-blue-500 hover:underline">
+          Esqueci minha senha
+        </a>
       </p>
       <div id="mensagem" class="text-center mt-4 font-semibold"></div>
     </form>
   </div>
 </div>
 
-<script>
-  const form = document.getElementById('formLogin');
-  const msg = document.getElementById('mensagem');
-
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const login = document.getElementById('login').value;
-    const senha = document.getElementById('senha').value;
-
-    const resposta = await fetch('/api/auth/login', {
-      method: 'POST',
-      body: JSON.stringify({ login, senha }),
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      }
-    });
-
-    let data = {};
-    try {
-      if (resposta.headers.get('content-type')?.includes('application/json')) {
-        data = await resposta.json();
-      } else {
-        const html = await resposta.text();
-        console.warn('⚠️ Resposta HTML recebida:', html);
-        throw new Error('Resposta não-JSON');
-      }
-    } catch (err) {
-      msg.textContent = 'Erro ao processar resposta do servidor.';
-      msg.classList.add('text-red-600');
-      return;
-    }
-
-    msg.textContent = data.mensagem || '';
-    msg.classList.remove('text-red-600', 'text-green-600');
-    msg.classList.add(resposta.ok ? 'text-green-600' : 'text-red-600');
-
-    if (data.token) {
-      localStorage.setItem('token', data.token);
-
-      // Sincroniza a sessão no backend
-      await fetch('/api/auth/syncSession', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-          'X-Requested-With': 'FetchRequest' // <- cabeçalho customizado
-        }
-      });
-
-      window.location.href = data.trocarSenha ? '/trocarSenha' : '/dashboard_processos';
-    }
-  });
-</script>
+<script type="module" src="/js/login.js"></script>
 
 <%- include('partials/footer') %>

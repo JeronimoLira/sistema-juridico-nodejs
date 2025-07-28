@@ -8,7 +8,8 @@ const { enviarEmailResetSenha } = require('../utils/email');
 const { verificarSenhaTemporaria } = require('../utils/seguranca');
 require('dotenv').config();
 
-const gerarToken = (payload) => jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
+const gerarToken = (payload) =>
+  jwt.sign(payload, process.env.JWT_SECRET, { expiresIn: '1h' });
 
 exports.login = async (req, res) => {
   const { login, senha } = req.body;
@@ -27,15 +28,21 @@ exports.login = async (req, res) => {
       usuario = await usuarioService.buscarUsuarioExternoPorLogin(login);
       tipo = 'externo';
       if (usuario && !usuario.cliente_id) {
-        return res.status(403).json({ mensagem: 'Usuário externo sem cliente associado. Contate o administrador.' });
+        return res.status(403).json({
+          mensagem:
+            'Usuário externo sem cliente associado. Contate o administrador.',
+        });
       }
     }
 
-    if (!usuario) return res.status(401).json({ mensagem: msg.USUARIO_NAO_ENCONTRADO });
-    if (!usuario.ativo) return res.status(403).json({ mensagem: msg.USUARIO_INATIVO });
+    if (!usuario)
+      return res.status(401).json({ mensagem: msg.USUARIO_NAO_ENCONTRADO });
+    if (!usuario.ativo)
+      return res.status(403).json({ mensagem: msg.USUARIO_INATIVO });
 
     const senhaValida = await bcrypt.compare(senha, usuario.senha);
-    if (!senhaValida) return res.status(401).json({ mensagem: msg.SENHA_INVALIDA });
+    if (!senhaValida)
+      return res.status(401).json({ mensagem: msg.SENHA_INVALIDA });
 
     const ehTemporaria = await verificarSenhaTemporaria(login, usuario.senha);
 
@@ -46,7 +53,7 @@ exports.login = async (req, res) => {
       email: usuario.email,
       nivel: usuario.nivel,
       tipo,
-      ...(tipo === 'externo' ? { cliente_id: usuario.cliente_id } : {})
+      ...(tipo === 'externo' ? { cliente_id: usuario.cliente_id } : {}),
     };
 
     const token = gerarToken(tokenPayload);
@@ -54,20 +61,32 @@ exports.login = async (req, res) => {
     req.session.token = token;
     req.session.usuario = tokenPayload;
 
-    const aceitaHtml = req.accepts(['html', 'json']) === 'html';
-    const isFetch = req.headers['sec-fetch-mode'] === 'cors';
+    const isJson = req.headers.accept?.includes('application/json');
+    const isFetch =
+      req.headers['x-requested-with']?.toLowerCase() === 'fetchrequest';
 
-    if (aceitaHtml && !isFetch) {
+    console.log('💬 Headers:', req.headers);
+    console.log('🎯 isJson:', isJson, '| isFetch:', isFetch);
+
+    if (!isJson && !isFetch) {
       return res.redirect('/dashboard_processos');
+    }
+
+    console.log('🧾 Conteúdo da resposta JSON:', data);
+
+    if (data.token) {
+      localStorage.setItem('token', data.token);
+      // ...
     }
 
     if (ehTemporaria) return res.status(200).json({ token, trocarSenha: true });
 
     return res.status(200).json({ token });
-
   } catch (err) {
     console.error('Erro no login:', err);
-    return res.status(500).json({ mensagem: msg.ERRO_TENTAR_LOGIN + msg.TENTE_NOVAMENTE });
+    return res
+      .status(500)
+      .json({ mensagem: msg.ERRO_TENTAR_LOGIN + msg.TENTE_NOVAMENTE });
   }
 };
 
@@ -81,10 +100,7 @@ exports.esqueciSenha = async (req, res) => {
   }
 
   try {
-    const [usuarios] = await pool.query(
-      sql.BUSCAR_USUARIO_POR_LOGIN,
-      [login]
-    );
+    const [usuarios] = await pool.query(sql.BUSCAR_USUARIO_POR_LOGIN, [login]);
 
     if (!usuarios.length) {
       return res.status(404).json({ mensagem: msg.USUARIO_NAO_ENCONTRADO });
@@ -100,7 +116,6 @@ exports.esqueciSenha = async (req, res) => {
     await enviarEmailResetSenha(usuario.email, token);
 
     return res.status(200).json({ mensagem: msg.LINK_REDEFINICAO_ENVIADO });
-
   } catch (error) {
     console.error('Erro ao enviar e-mail de redefinição:', error);
     return res.status(500).json({ mensagem: msg.ERRO_ENVIAR_EMAIL });
@@ -124,7 +139,10 @@ exports.trocarSenha = async (req, res) => {
     if (decoded.tipo === 'interno') {
       await usuarioService.atualizarSenhaPorCodigo(decoded.codigo, novaSenha);
     } else {
-      await usuarioService.atualizarSenhaExternoPorCodigo(decoded.codigo, novaSenha);
+      await usuarioService.atualizarSenhaExternoPorCodigo(
+        decoded.codigo,
+        novaSenha
+      );
     }
 
     return res.status(200).json({ mensagem: msg.SENHA_ALTERADA_SUCESSO });
