@@ -44,7 +44,7 @@
 
   <div class="overflow-x-auto bg-white shadow rounded-lg">
     <table class="w-full table-fixed">
-      <thead class="bg-gray-200 text-left text-gray-800 dark:bg-gray-700 dark:text-gray-100">
+      <thead class="bg-blue-800 text-white text-left">
         <tr>
           <th class="p-3 w-1/5">Número</th>
           <th class="p-3 w-1/5">Cliente</th>
@@ -66,19 +66,26 @@
   import { validarToken } from '/js/utils/rotinasGenericas.js';
   import { carregarProcessos } from '/js/dashboardProcessos.js';
 
-  (async () => {
-    await validarToken();
-    await carregarUsuariosInternos();
-    const select = document.getElementById('filtroUsuario');
-    if (select) select.value = select.querySelector('option').value;
-    carregarProcessos();
-  })();
   window.carregarProcessos = carregarProcessos;
+
+  const inicializarDashboard = async () => {
+    const usuario = await validarToken();
+    if (!usuario) return;
+
+    await carregarUsuariosInternos();
+
+    const select = document.getElementById('filtroUsuario');
+    if (select) select.value = usuario.codigo;
+
+    await carregarProcessos(); // garante execução após setup
+  };
+
+  inicializarDashboard();
 
   window.logout = function() {
     localStorage.removeItem('token');
     window.location.href = '/login';
-  }
+  };
 </script>
 
 <%- include('partials/footer') %>

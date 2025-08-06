@@ -86,6 +86,6 @@ router.get('/', autenticarToken, async (req, res) => {
 
 // Rota protegida para listar processos com filtros
 router.get('/processos', autenticar, processosController.listarProcessos);
-
+router.get('/novo', processosController.formularioProcessos);
 
 module.exports = router;

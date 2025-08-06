@@ -1,10 +1,10 @@
 <!-- 📄 src/views/pages/detalhes_processo.ejs -->
 <%- include('partials/header', { titulo: 'Detalhes - Processos' }) %>
 
-<div class="container mx-auto px-4 py-6">
+<div class="w-full max-w-7xl mx-auto px-4 py-6">
   <h1 class="text-2xl font-bold mb-4">Detalhes do Processo Nº <%= processo.numero %></h1>
 
-  <div class="bg-white shadow rounded p-4 mb-6">
+  <div class="bg-white dark:bg-gray-800 p-3 rounded-lg shadow mb-6">
     <p><strong>Cliente:</strong> <%= processo.cliente %></p>
     <p><strong>Parte Contrária:</strong> <%= processo.reu_nome || 'N/A' %></p>
     <p><strong>Tipo de Ação:</strong> <%= processo.tipo_acao_nome || 'Não especificado' %></p>

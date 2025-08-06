@@ -7,11 +7,13 @@ const app = express();
 const msg = require('./src/utils/mensagens');
 const pagesProcessosRoutes = require('./src/routes/pagesProcessos');
 const tabelasRoutes = require('./src/routes/tabelas');
+const carregarMenu = require('./src/middleware/menuMiddleware');
+
+// Menu
+app.use(carregarMenu); // Middleware para carregar o menu
 
 // 📦 Carrega variáveis de ambiente
 dotenv.config();
-
-app.use('/api', tabelasRoutes);
 
 // Usando .ejs
 app.set('views', path.join(__dirname, 'src', 'views', 'pages'));
@@ -33,9 +35,13 @@ app.use(express.urlencoded({ extended: true }));
 // 🌐 Arquivos estáticos da pasta 'public'
 app.use(express.static(path.join(__dirname, 'public')));
 
+// 🔄 Rotas públicas (SEM middleware!)
+const authRoutes = require('./src/routes/auth');
+app.use('/api/auth', authRoutes);   // 👈 deve vir ANTES
+app.use('/api', tabelasRoutes);     // 👈 este usa middleware global
+
 // 📦 Rotas públicas e protegidas
 const publicRoutes = require('./src/routes/publicRoutes');
-const authRoutes = require('./src/routes/auth');
 const dashboardRoutes = require('./src/routes/dashboardRoutes');
 const protegidasRoutes = require('./src/routes/protegidas');
 const processosRoutes = require('./src/routes/processos');
@@ -45,7 +51,6 @@ app.use('/processos', pagesProcessosRoutes);
 
 // 🟢 Rotas públicas (sem autenticação)
 app.use('/', publicRoutes);
-app.use('/api/auth', authRoutes);
 
 // 🟢 Rotas CRUD
 //app.use('/clientes', require('./src/routes/clientesCrud'));

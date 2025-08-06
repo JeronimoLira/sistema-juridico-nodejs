@@ -2,6 +2,7 @@
 const pool = require('../../db/db');
 const jwt = require('jsonwebtoken');
 const processosService = require('../services/processosService');
+const clientesService = require('../services/clientesService');
 
 require('dotenv').config();
 
@@ -48,4 +49,29 @@ exports.listar = async (req, res) => {
 exports.carregarPorId = async (req, res) => {
   const { id } = req.params;
   res.render('pages/processo_form', { id });
+};
+
+exports.formularioProcessos = async (req, res) => {
+  try {
+    const id = req.params.id;
+    const clientes = await clientesService.listarClientesAtivos(); // Ex: para um <select>
+    let processo = null;
+
+    if (id) {
+      processo = await processosService.buscarPorId(id);
+      if (!processo) {
+        return res.status(404).render('pages/404', { titulo: 'Processo não encontrado' });
+      }
+    }
+
+    res.render('pages/processo_form', {
+      titulo: id ? 'Editar Processo' : 'Novo Processo',
+      processo,
+      clientes
+    });
+
+  } catch (err) {
+    console.error('Erro ao carregar formulário do processo:', err);
+    res.status(500).render('pages/erro', { titulo: 'Erro ao carregar processo' });
+  }
 };

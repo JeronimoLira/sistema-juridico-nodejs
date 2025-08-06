@@ -1,0 +1,21 @@
+    <script>console.log("Menu no EJS:", <%= JSON.stringify(menu) %>)</script>
+      <!-- Menu dinâmico -->
+      <nav class="bg-blue-700 text-white">
+        <div class="container mx-auto px-4 py-2 flex space-x-4">
+          <% menu.filter(item => item.nivel === 0).forEach(principal => { %>
+            <% const filhos = menu.filter(sub => sub.codigo_pai === principal.codigo); %>
+              <div class="relative group">
+                <a href="<%= principal.rota || '#' %>" class="px-3 py-2 rounded hover:bg-blue-600 inline-block">
+                  <%= principal.label %>
+                </a>
+                <% if (filhos.length > 0) { %>
+                  <div class="absolute left-0 hidden group-hover:flex flex-col bg-white text-black mt-1 z-50 shadow-md rounded min-w-max">
+                    <% filhos.forEach(sub => { %>
+                      <a href="<%= sub.rota %>" class="block px-4 py-2 hover:bg-blue-100"><%= sub.label %></a>
+                    <% }) %>
+                  </div>
+                <% } %>
+              </div>
+          <% }); %>
+        </div>
+      </nav>

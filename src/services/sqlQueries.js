@@ -40,6 +40,21 @@ const SQL = {
     FROM usuarios_externos 
     WHERE login = ? AND ativo = 1
  `,
+  DETALHES_PROCESSO: `
+    SELECT 
+        p.*
+      , c.nome AS cliente
+      , c.email
+      , c.resp_email
+      , u.nome AS encarregado_nome
+      , u.email AS encarregado_email
+      , t.nome AS tipo_acao_nome
+    FROM processos p
+    JOIN clientes c ON c.codigo = p.cliente_cod
+    JOIN usuarios u ON u.codigo = p.encarregado
+    LEFT JOIN tipos_acao t ON t.codigo = p.tipo_acao
+    WHERE p.codigo = ?
+  `,
   LISTAR_USUARIOS_ATIVOS: `
     SELECT codigo, login, nome
     FROM usuarios
@@ -108,27 +123,18 @@ const SQL = {
       , p.audiencia
     FROM processos p
     JOIN clientes c ON c.codigo = p.cliente_cod
+    WHERE
+      p.fechado = 0
+      AND (? = '' OR p.numero LIKE CONCAT('%', ?, '%'))
+      AND (? = '' OR c.nome LIKE CONCAT('%', ?, '%'))
+      AND (? = 'Todos' OR p.encarregado = ?)  
   `,
-  COUNT_PROCESSOS_PAGINADOS: `
-    SELECT COUNT(*) AS total
-    FROM processos p
-    JOIN clientes c ON c.codigo = p.cliente_cod
-`,
-  DETALHES_PROCESSO: `
-    SELECT 
-        p.*
-      , c.nome AS cliente
-      , c.email
-      , c.resp_email
-      , u.nome AS encarregado_nome
-      , u.email AS encarregado_email
-      , t.nome AS tipo_acao_nome
-    FROM processos p
-    JOIN clientes c ON c.codigo = p.cliente_cod
-    JOIN usuarios u ON u.codigo = p.encarregado
-    LEFT JOIN tipos_acao t ON t.codigo = p.tipo_acao
-    WHERE p.codigo = ?
+  MONTAR_MENU: `
+    SELECT * 
+    FROM tab_menu 
+    ORDER BY nivel, ordem
   `,
+
   MOVIMENTOS_PROCESSO: `
     SELECT a.*, u.nome AS altpor_nome
     FROM andamento a

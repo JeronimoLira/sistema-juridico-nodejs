@@ -72,13 +72,6 @@ exports.login = async (req, res) => {
       return res.redirect('/dashboard_processos');
     }
 
-    console.log('🧾 Conteúdo da resposta JSON:', data);
-
-    if (data.token) {
-      localStorage.setItem('token', data.token);
-      // ...
-    }
-
     if (ehTemporaria) return res.status(200).json({ token, trocarSenha: true });
 
     return res.status(200).json({ token });

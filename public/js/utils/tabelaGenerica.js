@@ -1,87 +1,115 @@
 // 📄 public/js/utils/tabelaGenerica.js
 
-export async function inicializarTabela(seletor, options) {
-  const {
-    endpoint,
-    metodo = 'GET',
-    colunas = [],
-    links = [],
-    titulo = ''
-  } = options;
+export async function carregarTabelaGenerica({
+    queryName,
+    params = [],
+    pagina = 1,
+    limite = 10,
+    idTabela,
+    idPaginacao,
+    renderizarLinha
+}) {
+  const tabela = document.getElementById(idTabela);
+  const paginacao = document.getElementById(idPaginacao);
+  const token = localStorage.getItem('token');
 
-  const tabela = document.querySelector(seletor);
+  pagina = Number(pagina) || 1;
+  limite = Number(limite) || 10;
+
   if (!tabela) {
-    console.error(`❌ Tabela não encontrada para seletor: ${seletor}`);
+    console.warn(`⚠️ Tabela com ID "${idTabela}" não encontrada.`);
     return;
   }
 
-  const token = localStorage.getItem('token');
   if (!token) {
-    console.error('❌ Token JWT não encontrado no localStorage. Faça login novamente.');
+    console.error('❌ Token JWT ausente. Redirecionando para login.');
+    window.location.href = '/login';
     return;
   }
 
   try {
-    const resposta = await fetch(endpoint, {
-      method: metodo,
+    const resposta = await fetch(`/api/tabela?queryName=${queryName}`, {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
+        Authorization: `Bearer ${token}`
+      },
+      body: JSON.stringify({ params, pagina, limite })
     });
 
-    if (!resposta.ok) {
-      throw new Error(`Erro ${resposta.status}: ${resposta.statusText}`);
-    }
+    if (!resposta.ok) throw new Error('Erro ao buscar dados da tabela');
 
     const data = await resposta.json();
 
-    if (!data.processos || data.processos.length === 0) {
-      tabela.innerHTML = `<tr><td colspan="${colunas.length}" class="text-center text-gray-600">Nenhum dado encontrado.</td></tr>`;
+    if (!data.registros?.length) {
+      tabela.innerHTML = `<tr><td colspan="5" class="text-center text-gray-600">Nenhum registro encontrado.</td></tr>`;
+      paginacao.innerHTML = '';
       return;
     }
 
-    tabela.innerHTML = '';
+    tabela.innerHTML = data.registros.map(renderizarLinha).join('');
 
-    data.processos.forEach(proc => {
-      const desktopRow = document.createElement('tr');
-      desktopRow.className = 'hidden sm:table-row border-t text-gray-900 dark:text-gray-100';
+    // Renderização estilizada da paginação com Tailwind
+    const totalPaginas = data.paginas || 1;
+    paginacao.innerHTML = '';
 
-      const mobileRow = document.createElement('tr');
-      mobileRow.className = 'table-row sm:hidden border-t text-gray-900 dark:text-gray-100';
-      const mobileTd = document.createElement('td');
-      mobileTd.colSpan = colunas.length;
-      const mobileDiv = document.createElement('div');
-      mobileDiv.className = 'bg-white dark:bg-gray-800 rounded shadow p-3 mb-2';
+    const criarBotao = (texto, paginaAlvo, desabilitado = false) => {
+      const btn = document.createElement('button');
+      btn.textContent = texto;
+      btn.className = `mx-1 px-3 py-1 rounded border text-sm font-medium transition-colors duration-200
+        ${desabilitado
+          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+          : 'bg-white text-gray-700 hover:bg-blue-500 hover:text-white border-gray-300'}`;
+      if (!desabilitado) {
+        btn.onclick = () => carregarTabelaGenerica({
+          queryName,
+          params,
+          pagina: paginaAlvo,
+          limite,
+          idTabela,
+          idPaginacao,
+          renderizarLinha
+        });
+      }
+      return btn;
+    };
 
-      colunas.forEach(campo => {
-        const valor = proc[campo] || '-';
-        const link = links.includes(campo);
+    // << Primeira página
+    paginacao.appendChild(criarBotao('<<', 1, pagina === 1));
+    // < Página anterior
+    paginacao.appendChild(criarBotao('<', pagina - 1, pagina === 1));
 
-        const td = document.createElement('td');
-        td.className = 'p-2 bg-white dark:bg-gray-800';
+    // Botões numéricos limitados (máx. 5 por vez)
+    const range = 2;
+    const inicio = Math.max(1, pagina - range);
+    const fim = Math.min(totalPaginas, pagina + range);
+    for (let i = inicio; i <= fim; i++) {
+      const ativo = i === pagina;
+      const btn = document.createElement('button');
+      btn.textContent = i;
+      btn.className = `mx-1 px-3 py-1 rounded text-sm font-medium border ${ativo
+        ? 'bg-blue-600 text-white'
+        : 'bg-white text-gray-700 hover:bg-blue-500 hover:text-white border-gray-300'}`;
+      if (!ativo) {
+        btn.onclick = () => carregarTabelaGenerica({
+          queryName,
+          params,
+          pagina: i,
+          limite,
+          idTabela,
+          idPaginacao,
+          renderizarLinha
+        });
+      }
+      paginacao.appendChild(btn);
+    }
 
-        const display = link
-          ? `<a href="/${campo === 'cliente' ? 'clientes' : 'processos'}/${proc[campo + '_id'] || proc.codigo}" class="text-blue-600 hover:underline">${valor}</a>`
-          : valor;
-
-        td.innerHTML = display;
-        desktopRow.appendChild(td);
-
-        const div = document.createElement('div');
-        div.innerHTML = `<span class="font-semibold">${campo.charAt(0).toUpperCase() + campo.slice(1)}:</span> ${display}`;
-        mobileDiv.appendChild(div);
-      });
-
-      mobileTd.appendChild(mobileDiv);
-      mobileRow.appendChild(mobileTd);
-
-      tabela.appendChild(desktopRow);
-      tabela.appendChild(mobileRow);
-    });
-
+    // > Próxima página
+    paginacao.appendChild(criarBotao('>', pagina + 1, pagina === totalPaginas));
+    // >> Última página
+    paginacao.appendChild(criarBotao('>>', totalPaginas, pagina === totalPaginas));
   } catch (err) {
-    console.error('Erro ao inicializar tabela:', err);
-    tabela.innerHTML = `<tr><td colspan="${colunas.length}" class="text-center text-red-600">Erro ao carregar dados.</td></tr>`;
+    console.error('❌ Erro ao carregar tabela genérica:', err);
+    tabela.innerHTML = '<tr><td colspan="5" class="text-center text-red-600">Erro ao carregar dados.</td></tr>';
   }
 }
